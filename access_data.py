@@ -1,5 +1,4 @@
 import json
-import urllib.request
 import requests
 
 
@@ -41,11 +40,7 @@ def main():
 def isValidAppID(ID):
     url = 'http://store.steampowered.com/appreviews/' + str(ID) + '?json=1'
     data = requests.get(url).json()
-    if data["success"] == 1:
-        valid = True
-    else:
-        valid = False
-    return valid
+    return data["success"] == 1
 
 
 if __name__ == '__main__':
