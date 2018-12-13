@@ -43,11 +43,6 @@ def main():
 def isValidAppID(connection, ID):
     data = get_json(connection, '/appreviews/' + str(ID) + '?json=1')
     return data["success"] == 1
-
-def request(connection, ID):
-    j = get_json(connection, '/appreviews/' + str(ID) + '?json=1')
-    print(json.dumps(j, indent=4))
-    connection.close()
     
 def get_json(connection, url):
     connection.request("GET", url)
