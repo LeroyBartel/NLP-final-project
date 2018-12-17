@@ -109,8 +109,7 @@ def get_steam_data():
             print(get_game_title(app_id, app_list))
             data.append(create_json_entry(connection, app_id, app_list))
             print("-------------------------------------\n")
-
-        app_id += 1
+            app_id += 1
 
     connection.close()
     return {"steam_apps": data}
