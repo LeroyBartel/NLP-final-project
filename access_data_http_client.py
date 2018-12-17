@@ -3,8 +3,7 @@ import http.client
 
 
 def main():
-    data = get_steam_data()
-    write_data_as_json(data, "review_data2.json", indent=4)
+    write_data_as_json(get_steam_data(), "review_data.json", indent=None)
 
 
 def is_valid_app_id(connection, ID):
