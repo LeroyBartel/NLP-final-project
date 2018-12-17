@@ -98,8 +98,8 @@ def get_steam_data():
     connection = http.client.HTTPSConnection("store.steampowered.com")
 
     data = []
-    app_id = 473770  # 0
-    app_id_max = 473770  # get_max_ID(app_list)
+    app_id = 0
+    app_id_max = get_max_ID(app_list)
 
     while app_id <= app_id_max:
 
