@@ -35,11 +35,12 @@ def get_game_title(ID, app_list):
     return list(filter(lambda entry: entry['appid'] == ID, app_list))[0]
 
 
+# exclusively english reviews that have at least 1 up-vote are fetched
 def get_all_reviews_for_app(connection, ID):
 
     review_list = []
     review_offset = 0
-    review_limit_per_app = 1500  # multiple of num_per_page
+    # review_limit_per_app = 1500  # multiple of num_per_page
     more_reviews_available = True
 
     # causes early request stop, but sends one more request than actually necessary -> might be optimized
@@ -58,7 +59,8 @@ def get_all_reviews_for_app(connection, ID):
         json_data = get_json(connection, url)
         more_reviews_available = json_data["query_summary"]["num_reviews"] > 0
         for review in json_data["reviews"]:
-            review_list.append(review)
+            if review["language"] == "english" and review["votes_up"] > 0:
+                review_list.append(review)
 
         review_offset += 100
 
