@@ -37,12 +37,12 @@ def get_specific_reviews_for_app(connection, ID, review_type, review_limit):
     review_offset = 0
     get_more_reviews = True
 
-    # causes early request stop, but sends one more request than actually necessary -> might be optimized
+    # causes early request stop, but sends one more request than actually necessary
     while get_more_reviews:
-        # day range 9223372036854775807 might be a hack
+        # day range 9223372036854775807 is a trick
         url = "/appreviews/" + str(ID) + "?json=1" + \
               "&filter=all" + \
-              "&language=english" + \
+              "&language=all" + \
               "&day_range=9223372036854775807" + \
               "&start_offset=" + str(review_offset) + \
               "&review_type=" + review_type + \
@@ -52,7 +52,7 @@ def get_specific_reviews_for_app(connection, ID, review_type, review_limit):
         print("Game ID: {} --- {}".format(ID, review_offset))
         json_data = get_json(connection, url)
         for review in json_data["reviews"]:
-            if review["language"] == "english" and review["votes_up"] > 0 and len(review_list) < review_limit:
+            if review["language"] == "english" and len(review_list) < review_limit:
                 review_list.append(review)
 
         review_offset += 100
@@ -63,7 +63,7 @@ def get_specific_reviews_for_app(connection, ID, review_type, review_limit):
 
 # exclusively english reviews that have at least 1 up-vote are fetched
 def get_reviews_for_app(connection, ID):
-    reviews = get_specific_reviews_for_app(connection, ID, "all", 10000000)
+    reviews = get_specific_reviews_for_app(connection, ID, review_type="all", review_limit=10000000)
     return reviews
 
 
@@ -99,7 +99,7 @@ def write_data_as_json(data, file_path, indent=None):
         json.dump(data, out_file, indent=indent)
 
 
-def get_steam_data(start_ID):
+def get_steam_data(start_ID, indent=None):
 
     app_list = get_app_list()
     connection = http.client.HTTPSConnection("store.steampowered.com")
@@ -117,10 +117,9 @@ def get_steam_data(start_ID):
             app_id += 1
 
         else:
-            game_title = get_game_title(app_id, app_list)
-            file_path = os.path.join(path, "App_" + str(app_id) + "_" + game_title["name"] + ".json")
-            print(game_title)
-            write_data_as_json(create_json_entry(connection, app_id, app_list), file_path)
+            file_path = os.path.join(path, "App_" + str(app_id) + ".json")
+            print(get_game_title(app_id, app_list))
+            write_data_as_json(create_json_entry(connection, app_id, app_list), file_path, indent)
             print("-------------------------------------\n")
             app_id += 1
 
@@ -128,7 +127,7 @@ def get_steam_data(start_ID):
 
 
 def main():
-    get_steam_data(start_ID=0)
+    get_steam_data(start_ID=0, indent=0)
 
         
 if __name__ == "__main__":
