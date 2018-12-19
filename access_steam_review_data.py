@@ -1,9 +1,6 @@
 import json
+import os
 import http.client
-
-
-def main():
-    write_data_as_json(get_steam_data(), "review_data.json", indent=None)
 
 
 def is_valid_app_id(connection, ID):
@@ -35,36 +32,39 @@ def get_game_title(ID, app_list):
     return list(filter(lambda entry: entry['appid'] == ID, app_list))[0]
 
 
-# exclusively english reviews that have at least 1 up-vote are fetched
-def get_all_reviews_for_app(connection, ID):
-
+def get_specific_reviews_for_app(connection, ID, review_type, review_limit):
     review_list = []
     review_offset = 0
-    # review_limit_per_app = 1500  # multiple of num_per_page
-    more_reviews_available = True
+    get_more_reviews = True
 
     # causes early request stop, but sends one more request than actually necessary -> might be optimized
-    while more_reviews_available:
+    while get_more_reviews:
         # day range 9223372036854775807 might be a hack
         url = "/appreviews/" + str(ID) + "?json=1" + \
               "&filter=all" + \
-              "&language=all" + \
+              "&language=english" + \
               "&day_range=9223372036854775807" + \
               "&start_offset=" + str(review_offset) + \
-              "&review_type=all" + \
+              "&review_type=" + review_type + \
               "&purchase_type=all" + \
               "&num_per_page=100"
 
         print("Game ID: {} --- {}".format(ID, review_offset))
         json_data = get_json(connection, url)
-        more_reviews_available = json_data["query_summary"]["num_reviews"] > 0
         for review in json_data["reviews"]:
-            if review["language"] == "english" and review["votes_up"] > 0:
+            if review["language"] == "english" and review["votes_up"] > 0 and len(review_list) < review_limit:
                 review_list.append(review)
 
         review_offset += 100
+        get_more_reviews = json_data["query_summary"]["num_reviews"] > 0 and len(review_list) < review_limit
 
     return review_list
+
+
+# exclusively english reviews that have at least 1 up-vote are fetched
+def get_reviews_for_app(connection, ID):
+    reviews = get_specific_reviews_for_app(connection, ID, "all", 10000000)
+    return reviews
 
 
 def get_number_of_positive_reviews(reviews):
@@ -77,13 +77,14 @@ def get_number_of_positive_reviews(reviews):
 
 def create_json_entry(connection, app_ID, app_list):
     app_title = get_game_title(app_ID, app_list)["name"]
-    reviews = get_all_reviews_for_app(connection, app_ID)
+    reviews = get_reviews_for_app(connection, app_ID)
 
     total_reviews = len(reviews)
     total_pos_reviews = get_number_of_positive_reviews(reviews)
     total_neg_reviews = total_reviews - total_pos_reviews
 
     print("Total number of reviews: {}".format(total_reviews))
+    print("Positive: {} --- Negative: {}".format(total_pos_reviews, total_neg_reviews))
     app_data = {"app_id": app_ID,
                 "app_title": app_title,
                 "total_reviews": total_reviews,
@@ -93,14 +94,22 @@ def create_json_entry(connection, app_ID, app_list):
     return app_data
 
 
-def get_steam_data():
+def write_data_as_json(data, file_path, indent=None):
+    with open(file_path, "w", encoding="utf-8") as out_file:
+        json.dump(data, out_file, indent=indent)
+
+
+def get_steam_data(start_ID):
 
     app_list = get_app_list()
     connection = http.client.HTTPSConnection("store.steampowered.com")
 
-    data = []
-    app_id = 0
+    app_id = start_ID
     app_id_max = get_max_ID(app_list)
+
+    path = "steam_review_data"
+    if not os.path.exists(path):
+        os.makedirs(path)
 
     while app_id <= app_id_max:
 
@@ -108,26 +117,18 @@ def get_steam_data():
             app_id += 1
 
         else:
-            print(get_game_title(app_id, app_list))
-            data.append(create_json_entry(connection, app_id, app_list))
+            game_title = get_game_title(app_id, app_list)
+            file_path = os.path.join(path, "App_" + str(app_id) + "_" + game_title["name"] + ".json")
+            print(game_title)
+            write_data_as_json(create_json_entry(connection, app_id, app_list), file_path)
             print("-------------------------------------\n")
             app_id += 1
 
     connection.close()
-    return {"steam_apps": data}
 
 
-def write_data_as_json(data, file_path, indent=None):
-    with open(file_path, "w", encoding="utf-8") as out_file:
-        json.dump(data, out_file, indent=indent)
-
-
-def create_csv_entry(json_entry):
-    pass
-
-
-def create_csv_file(json_data):
-    pass
+def main():
+    get_steam_data(start_ID=0)
 
         
 if __name__ == "__main__":
