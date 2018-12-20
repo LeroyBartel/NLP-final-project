@@ -29,7 +29,11 @@ def get_max_ID(app_list):
 
 
 def get_game_title(ID, app_list):
-    return list(filter(lambda entry: entry['appid'] == ID, app_list))[0]
+    try:
+        title = list(filter(lambda entry: entry['appid'] == ID, app_list))[0]
+    except IndexError:
+        title = {"appid": ID, "name": ""}
+    return title
 
 
 def get_specific_reviews_for_app(connection, ID, review_type, review_limit):
@@ -127,7 +131,7 @@ def get_steam_data(start_ID, indent=None):
 
 
 def main():
-    get_steam_data(start_ID=0, indent=0)
+    get_steam_data(start_ID=731, indent=0)
 
         
 if __name__ == "__main__":
