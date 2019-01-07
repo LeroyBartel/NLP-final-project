@@ -4,8 +4,12 @@ import http.client
 
 
 def is_valid_app_id(connection, ID):
-    data = get_json(connection, "/appreviews/" + str(ID) + "?json=1")
-    return data["success"] == 1
+    try:
+        data = get_json(connection, "/appreviews/" + str(ID) + "?json=1")
+        result = data["success"] == 1
+    except:
+        result = False
+    return result
 
     
 def get_json(connection, url):
@@ -117,21 +121,23 @@ def get_steam_data(start_ID, indent=None):
 
     while app_id <= app_id_max:
 
-        if not is_valid_app_id(connection, app_id):
-            app_id += 1
+        if is_valid_app_id(connection, app_id):
 
-        else:
-            file_path = os.path.join(path, "App_" + str(app_id) + ".json")
             print(get_game_title(app_id, app_list))
-            write_data_as_json(create_json_entry(connection, app_id, app_list), file_path, indent)
+            file_path = os.path.join(path, "App_" + str(app_id) + ".json")
+            json_entry = create_json_entry(connection, app_id, app_list)
             print("-------------------------------------\n")
-            app_id += 1
+
+            if len(json_entry["reviews"]) > 0:
+                write_data_as_json(json_entry, file_path, indent)
+
+        app_id += 1
 
     connection.close()
 
 
 def main():
-    get_steam_data(start_ID=731, indent=0)
+    get_steam_data(start_ID=99910, indent=0)
 
         
 if __name__ == "__main__":
