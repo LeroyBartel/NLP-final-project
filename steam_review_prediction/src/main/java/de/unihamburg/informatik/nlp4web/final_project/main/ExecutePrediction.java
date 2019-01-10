@@ -2,8 +2,11 @@ package de.unihamburg.informatik.nlp4web.final_project.main;
 
 import org.apache.uima.UIMAException;
 import org.apache.uima.UIMAFramework;
-//import org.apache.uima.analysis_engine.AnalysisEngine;
+import org.apache.uima.analysis_engine.AnalysisEngine;
+import org.apache.uima.collection.CollectionReader;
 import org.apache.uima.fit.factory.AnalysisEngineFactory;
+import org.apache.uima.fit.factory.CollectionReaderFactory;
+import org.apache.uima.fit.pipeline.SimplePipeline;
 import org.apache.uima.fit.testing.util.HideOutput;
 import org.apache.uima.resource.ResourceInitializationException;
 import org.apache.uima.util.Level;
@@ -16,12 +19,16 @@ import org.cleartk.util.cr.FilesCollectionReader;
 
 import de.tudarmstadt.ukp.dkpro.core.stanfordnlp.StanfordLemmatizer;
 import de.tudarmstadt.ukp.dkpro.core.stanfordnlp.StanfordPosTagger;
+import de.tudarmstadt.ukp.dkpro.core.stanfordnlp.StanfordSegmenter;
 import de.unihamburg.informatik.nlp4web.final_project.annotator.NewsClassificationAnnotator;
+import de.unihamburg.informatik.nlp4web.final_project.reader.JsonReviewReader;
 import de.unihamburg.informatik.nlp4web.final_project.reader.NewsTitleReader;
 import de.unihamburg.informatik.nlp4web.final_project.writer.NewsClassificationAnalyzer;
+import de.unihamburg.informatik.nlp4web.final_project.writer.TestWriter;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Paths;
 
 import static org.apache.uima.fit.factory.AnalysisEngineFactory.createEngine;
 import static org.apache.uima.fit.pipeline.SimplePipeline.runPipeline;
@@ -155,7 +162,20 @@ public class ExecutePrediction {
 //        UIMAFramework.getLogger().log(Level.INFO, "Time: " + (now - start) + "ms");
 //    }
     
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws UIMAException, IOException {
+    	
+    	CollectionReader reader = CollectionReaderFactory.createReader(JsonReviewReader.class,
+    			JsonReviewReader.PARAM_DIRECTORY, Paths.get("src/main/resources/steam-reviews").toString(),
+    			JsonReviewReader.PARAM_LANGUAGE, "en");
+    	
+    	AnalysisEngine segmenter = createEngine(StanfordSegmenter.class);
+    	AnalysisEngine writer = createEngine(TestWriter.class);
+    	
+    	SimplePipeline.runPipeline(
+    			reader,
+    			segmenter,
+    			writer
+    	);
     	
 //    	execute("news/uci-news-aggregator.csv.train.small", "news/uci-news-aggregator.csv.test.small", "small", false);
 //    	execute("news/uci-news-aggregator-b-e.csv.train", "news/uci-news-aggregator-b-e.csv.test", "-b-e", false);
