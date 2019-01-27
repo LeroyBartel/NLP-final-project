@@ -39,12 +39,14 @@ public class JsonReviewReader extends JCasCollectionReader_ImplBase {
 	private List<File> documents;
 	private int i = 0;
 	
-	int REVIEW_COUNT = 100;
+	int REVIEW_COUNT = 10000;
+	StringBuilder sb;
 	
 	@Override
 	public void initialize(UimaContext context) throws ResourceInitializationException {
 		super.initialize(context);
 		documents = new ArrayList<File>(FileUtils.listFiles(dir, new String[] {"json"}, false));
+		this.sb = new StringBuilder();
 	}
 	
 	@Override
@@ -60,7 +62,6 @@ public class JsonReviewReader extends JCasCollectionReader_ImplBase {
 	@Override
 	public void getNext(JCas jCas) throws IOException, CollectionException {
 		
-		StringBuilder sb = new StringBuilder();
 		File f = documents.get(i);
 		
 		JsonElement root = new JsonParser().parse(new FileReader(f));
