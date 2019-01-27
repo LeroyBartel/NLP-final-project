@@ -16,7 +16,6 @@ import java.util.logging.SimpleFormatter;
 import static org.apache.uima.fit.util.JCasUtil.select;
 
 public class ReviewClassificationAnalyzer extends JCasAnnotator_ImplBase {
-    //UIMAFramework.getLogger(NewsClassificationAnalyzer.class);
 
 	public static final String LF = System.getProperty("line.separator");
     public static final String PARAM_OUTPUT_DIR = "InputFile";
@@ -41,10 +40,10 @@ public class ReviewClassificationAnalyzer extends JCasAnnotator_ImplBase {
 	        try {
 	            FileOutputStream result = new FileOutputStream(outputDir);
 	            IOUtils.write("TITLE\tGOLD\tPREDICTED\n", result,"UTF-8");
-	        	for (ReviewAnnotation news : select(jCas, ReviewAnnotation.class)) {
-	        		String predicted = news.getPredictValue();
-	        		String gold = news.getGoldValue();
-	        		IOUtils.write(news.getTitle() +"\t"+ gold +"\t"+predicted+"\n", result, "UTF-8");
+	        	for (ReviewAnnotation reviews : select(jCas, ReviewAnnotation.class)) {
+	        		String predicted = reviews.getPredictValue();
+	        		String gold = reviews.getGoldValue();
+	        		IOUtils.write(reviews.getTitle() +"\t"+ gold +"\t"+predicted+"\n", result, "UTF-8");
 	        	}
 	        } catch (IOException e) {
 	            // TODO Auto-generated catch block
@@ -56,23 +55,23 @@ public class ReviewClassificationAnalyzer extends JCasAnnotator_ImplBase {
 	        int total = computeTotalClassifications(confusion_mat);
 	        int correct = computeCorrectClassifications(confusion_mat);
 	        
-	        logger.info("Total news " + total);
-	        logger.info("Total correct classifications " + correct);
-	        logger.info("Total incorrect classifications " + (total - correct));
-	        logger.info("Accuracy " + String.format("%1$,.2f", acc) + "%");
-	        logger.info("------------------------------------------------------------------------------------------------------------");
+	        logger.info(LF + "Total reviews " + total
+	        		+ LF + "Total correct classifications " + correct
+	        		+ LF + "Total incorrect classifications " + (total - correct)
+	        		+ LF + "Accuracy " + String.format("%1$,.2f", acc) + "%"
+	        		+ LF + "------------------------------------------------------------------------------------------------------------");
 	        
-	        logger.info("Precision 0 " + computePrecision(confusion_mat, 0));
-	        logger.info("Precision 1 " + computePrecision(confusion_mat, 1));
-	        logger.info("------------------------------------------------------------------------------------------------------------");
+	        logger.info(LF + "Precision \"voted_down\": " + computePrecision(confusion_mat, 0)
+	        + LF + "Precision \"voted_up\": " + computePrecision(confusion_mat, 1)
+	        + LF + "------------------------------------------------------------------------------------------------------------");
 	        
-	        logger.info("Recall 0 " + computeRecall(confusion_mat, 0));
-	        logger.info("Recall 1 " + computeRecall(confusion_mat, 1));
-	        logger.info("------------------------------------------------------------------------------------------------------------");
+	        logger.info(LF + "Recall \"voted_down\": " + computeRecall(confusion_mat, 0)
+	        + LF + "Recall \"voted_up\": " + computeRecall(confusion_mat, 1)
+	        + LF + "------------------------------------------------------------------------------------------------------------");
 	        
-	        logger.info("F1 0 " + computeF1(confusion_mat, 0));
-	        logger.info("F1 1 " + computeF1(confusion_mat, 1));
-	        logger.info("------------------------------------------------------------------------------------------------------------" + LF + LF);
+	        logger.info(LF + "F1 \"voted_down\": " + computeF1(confusion_mat, 0)
+	        + LF + "F1 \"voted_up\": " + computeF1(confusion_mat, 1)
+	        + LF + "------------------------------------------------------------------------------------------------------------" + LF + LF);
 	        
 		fhandler.close();
 		
@@ -101,13 +100,13 @@ public class ReviewClassificationAnalyzer extends JCasAnnotator_ImplBase {
     }
     
     private int[][] computeConfusionMatrix(JCas jCas) {
-    	// Computes confusion matrix C[i,j] with fixed size 4x4 for all categories (b, t, e, m).
+    	// Computes confusion matrix C[i,j] with fixed size 2x2 for all categories (voted_up/voted_down).
     	// Row indexes correspond to the actual true values, whereas columns correspond to the predictions.
-    	// b <-> idx 0; t <-> idx 1; e <-> idx 2; m <-> idx 3; 
+    	// voted_down <-> idx 0; voted_up <-> idx 1; 
     	int[][] conf_mat = new int[2][2];
-    	for (ReviewAnnotation news : select(jCas, ReviewAnnotation.class)) {
-    		String predicted = news.getPredictValue();
-    		String gold = news.getGoldValue();
+    	for (ReviewAnnotation reviews : select(jCas, ReviewAnnotation.class)) {
+    		String predicted = reviews.getPredictValue();
+    		String gold = reviews.getGoldValue();
     		
     		switch (gold) {
     		case "0":

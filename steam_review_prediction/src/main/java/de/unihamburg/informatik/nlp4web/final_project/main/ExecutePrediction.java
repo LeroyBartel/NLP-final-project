@@ -38,7 +38,7 @@ public class ExecutePrediction {
 		System.err.println("Step 1: Extracting features and writing raw instances data");
 		runPipeline(
 				CollectionReaderFactory.createReader(JsonReviewReader.class,
-		    			JsonReviewReader.PARAM_DIRECTORY, Paths.get("src/main/resources/steam-reviews").toString(),
+		    			JsonReviewReader.PARAM_DIRECTORY, saTrain.getAbsolutePath(),
 		    			JsonReviewReader.PARAM_LANGUAGE, "en"),
 				createEngine(ReviewAnnotator.class),
 //				createEngine(StanfordPosTagger.class, StanfordPosTagger.PARAM_LANGUAGE, "en"),
@@ -65,7 +65,7 @@ public class ExecutePrediction {
 			throws ResourceInitializationException, UIMAException, IOException {
 		runPipeline(
 				CollectionReaderFactory.createReader(JsonReviewReader.class,
-		    			JsonReviewReader.PARAM_DIRECTORY, Paths.get("src/main/resources/steam-reviews").toString(),
+		    			JsonReviewReader.PARAM_DIRECTORY, saTest.getAbsolutePath(),
 		    			JsonReviewReader.PARAM_LANGUAGE, "en"),
 				createEngine(ReviewAnnotator.class),
 //				createEngine(StanfordPosTagger.class, StanfordPosTagger.PARAM_LANGUAGE, "en"),
@@ -88,7 +88,7 @@ public class ExecutePrediction {
 
 	public static void execute(String train, String test, String name) throws Exception {
 		String generalPath = "src/main/resources/";
-		String[] trainingArguments = new String[]{"-t", "0"};
+		String[] trainingArguments = new String[]{"-t", "0", "-b", "1"};
 		long start = System.currentTimeMillis();
 
 		String modelPath = generalPath + "model" + name + "/";
@@ -97,56 +97,43 @@ public class ExecutePrediction {
 
 		String resltPath = generalPath + "results" + name + "/";
 		new File(resltPath).mkdirs();
-		File resultDir = new File(resltPath+"news.csv");
+		File resultDir = new File(resltPath+"review_sentiment_prediction.csv");
 		File resultScores = new File(resltPath+"test-scores.txt");
 
-		File newsTrain = new File(generalPath + train);
-		File newsTest = new File(generalPath + test);
+		File reviewsTrain = new File(generalPath + train);
+		File reviewsTest = new File(generalPath + test);
 
-		writeModel(newsTrain, modelDir);
+		writeModel(reviewsTrain, modelDir);
 		trainModel(modelDir, trainingArguments);
-		classifyTestFile(modelDir, newsTest, resultDir, resultScores);
+		classifyTestFile(modelDir, reviewsTest, resultDir, resultScores);
 		long now = System.currentTimeMillis();
 		UIMAFramework.getLogger().log(Level.INFO, "Time: " + (now - start) + "ms");
 	}
 	
     public static void main(String[] args) throws UIMAException, IOException {
     	
-//    	CollectionReader reader = CollectionReaderFactory.createReader(JsonReviewReader.class,
-//    			JsonReviewReader.PARAM_DIRECTORY, Paths.get("src/main/resources/steam-reviews").toString(),
-//    			JsonReviewReader.PARAM_LANGUAGE, "en");
-//    	
-//    	AnalysisEngine segmenter = createEngine(StanfordSegmenter.class);
-//    	AnalysisEngine writer = createEngine(TestWriter.class);
-//    	
-//    	SimplePipeline.runPipeline(
-//    			reader,
-//    			segmenter,
-//    			writer
-//    	);
-    	
     	try {
-			execute("steam-reviews/App_219.json", "evaluation-reviews/App_219.json", "_review_sentiment_prediction");
+			execute("steam-reviews/", "evaluation-reviews/", "_review_sentiment_prediction");
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
     	
-//    	execute("news/uci-news-aggregator.csv.train.small", "news/uci-news-aggregator.csv.test.small", "small", false);
-//    	execute("news/uci-news-aggregator-b-e.csv.train", "news/uci-news-aggregator-b-e.csv.test", "-b-e", false);
-//    	execute("news/uci-news-aggregator-b-m.csv.train", "news/uci-news-aggregator-b-m.csv.test", "-b-m", false);
-//    	execute("news/uci-news-aggregator-b-t.csv.train", "news/uci-news-aggregator-b-t.csv.test", "-b-t", false);
-//    	execute("news/uci-news-aggregator-e-m.csv.train", "news/uci-news-aggregator-e-m.csv.test", "-e-m", false);
-//    	execute("news/uci-news-aggregator-t-e.csv.train", "news/uci-news-aggregator-t-e.csv.test", "-t-e", false);
-//    	execute("news/uci-news-aggregator-t-m.csv.train", "news/uci-news-aggregator-t-m.csv.test", "-t-m", false);
+//    	execute("reviews/uci-reviews-aggregator.csv.train.small", "reviews/uci-reviews-aggregator.csv.test.small", "small", false);
+//    	execute("reviews/uci-reviews-aggregator-b-e.csv.train", "reviews/uci-reviews-aggregator-b-e.csv.test", "-b-e", false);
+//    	execute("reviews/uci-reviews-aggregator-b-m.csv.train", "reviews/uci-reviews-aggregator-b-m.csv.test", "-b-m", false);
+//    	execute("reviews/uci-reviews-aggregator-b-t.csv.train", "reviews/uci-reviews-aggregator-b-t.csv.test", "-b-t", false);
+//    	execute("reviews/uci-reviews-aggregator-e-m.csv.train", "reviews/uci-reviews-aggregator-e-m.csv.test", "-e-m", false);
+//    	execute("reviews/uci-reviews-aggregator-t-e.csv.train", "reviews/uci-reviews-aggregator-t-e.csv.test", "-t-e", false);
+//    	execute("reviews/uci-reviews-aggregator-t-m.csv.train", "reviews/uci-reviews-aggregator-t-m.csv.test", "-t-m", false);
 //    	
-//    	execute("news/uci-news-aggregator.csv.train.small", "news/uci-news-aggregator.csv.test.small", "small", true);
-//    	execute("news/uci-news-aggregator-b-e.csv.train", "news/uci-news-aggregator-b-e.csv.test", "-b-e", true);
-//    	execute("news/uci-news-aggregator-b-m.csv.train", "news/uci-news-aggregator-b-m.csv.test", "-b-m", true);
-//    	execute("news/uci-news-aggregator-b-t.csv.train", "news/uci-news-aggregator-b-t.csv.test", "-b-t", true);
-//    	execute("news/uci-news-aggregator-e-m.csv.train", "news/uci-news-aggregator-e-m.csv.test", "-e-m", true);
-//    	execute("news/uci-news-aggregator-t-e.csv.train", "news/uci-news-aggregator-t-e.csv.test", "-t-e", true);
-//    	execute("news/uci-news-aggregator-t-m.csv.train", "news/uci-news-aggregator-t-m.csv.test", "-t-m", true);
+//    	execute("reviews/uci-reviews-aggregator.csv.train.small", "reviews/uci-reviews-aggregator.csv.test.small", "small", true);
+//    	execute("reviews/uci-reviews-aggregator-b-e.csv.train", "reviews/uci-reviews-aggregator-b-e.csv.test", "-b-e", true);
+//    	execute("reviews/uci-reviews-aggregator-b-m.csv.train", "reviews/uci-reviews-aggregator-b-m.csv.test", "-b-m", true);
+//    	execute("reviews/uci-reviews-aggregator-b-t.csv.train", "reviews/uci-reviews-aggregator-b-t.csv.test", "-b-t", true);
+//    	execute("reviews/uci-reviews-aggregator-e-m.csv.train", "reviews/uci-reviews-aggregator-e-m.csv.test", "-e-m", true);
+//    	execute("reviews/uci-reviews-aggregator-t-e.csv.train", "reviews/uci-reviews-aggregator-t-e.csv.test", "-t-e", true);
+//    	execute("reviews/uci-reviews-aggregator-t-m.csv.train", "reviews/uci-reviews-aggregator-t-m.csv.test", "-t-m", true);
     }
 }
 
