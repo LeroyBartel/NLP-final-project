@@ -1,5 +1,5 @@
 
-/* First created by JCasGen Mon Nov 12 23:01:29 CET 2018 */
+/* First created by JCasGen Sun Jan 27 17:00:35 CET 2019 */
 package de.unihamburg.informatik.nlp4web.final_project.type;
 
 import org.apache.uima.jcas.JCas;
@@ -11,16 +11,16 @@ import org.apache.uima.cas.Feature;
 import org.apache.uima.jcas.tcas.Annotation_Type;
 
 /** 
- * Updated by JCasGen Mon Nov 12 23:18:45 CET 2018
+ * Updated by JCasGen Sun Jan 27 17:00:35 CET 2019
  * @generated */
-public class NewsAnnotation_Type extends Annotation_Type {
+public class ReviewAnnotation_Type extends Annotation_Type {
   /** @generated */
   @SuppressWarnings ("hiding")
-  public final static int typeIndexID = NewsAnnotation.typeIndexID;
+  public final static int typeIndexID = ReviewAnnotation.typeIndexID;
   /** @generated 
      @modifiable */
   @SuppressWarnings ("hiding")
-  public final static boolean featOkTst = JCasRegistry.getFeatOkTst("de.unihamburg.informatik.nlp4web.tutorial.tut5.type.NewsAnnotation");
+  public final static boolean featOkTst = JCasRegistry.getFeatOkTst("de.unihamburg.informatik.nlp4web.final_project.type.ReviewAnnotation");
  
   /** @generated */
   final Feature casFeat_goldValue;
@@ -32,7 +32,7 @@ public class NewsAnnotation_Type extends Annotation_Type {
    */ 
   public String getGoldValue(int addr) {
         if (featOkTst && casFeat_goldValue == null)
-      jcas.throwFeatMissing("goldValue", "de.unihamburg.informatik.nlp4web.tutorial.tut5.type.NewsAnnotation");
+      jcas.throwFeatMissing("goldValue", "de.unihamburg.informatik.nlp4web.final_project.type.ReviewAnnotation");
     return ll_cas.ll_getStringValue(addr, casFeatCode_goldValue);
   }
   /** @generated
@@ -41,7 +41,7 @@ public class NewsAnnotation_Type extends Annotation_Type {
    */    
   public void setGoldValue(int addr, String v) {
         if (featOkTst && casFeat_goldValue == null)
-      jcas.throwFeatMissing("goldValue", "de.unihamburg.informatik.nlp4web.tutorial.tut5.type.NewsAnnotation");
+      jcas.throwFeatMissing("goldValue", "de.unihamburg.informatik.nlp4web.final_project.type.ReviewAnnotation");
     ll_cas.ll_setStringValue(addr, casFeatCode_goldValue, v);}
     
   
@@ -56,7 +56,7 @@ public class NewsAnnotation_Type extends Annotation_Type {
    */ 
   public String getPredictValue(int addr) {
         if (featOkTst && casFeat_predictValue == null)
-      jcas.throwFeatMissing("predictValue", "de.unihamburg.informatik.nlp4web.tutorial.tut5.type.NewsAnnotation");
+      jcas.throwFeatMissing("predictValue", "de.unihamburg.informatik.nlp4web.final_project.type.ReviewAnnotation");
     return ll_cas.ll_getStringValue(addr, casFeatCode_predictValue);
   }
   /** @generated
@@ -65,7 +65,7 @@ public class NewsAnnotation_Type extends Annotation_Type {
    */    
   public void setPredictValue(int addr, String v) {
         if (featOkTst && casFeat_predictValue == null)
-      jcas.throwFeatMissing("predictValue", "de.unihamburg.informatik.nlp4web.tutorial.tut5.type.NewsAnnotation");
+      jcas.throwFeatMissing("predictValue", "de.unihamburg.informatik.nlp4web.final_project.type.ReviewAnnotation");
     ll_cas.ll_setStringValue(addr, casFeatCode_predictValue, v);}
     
   
@@ -80,7 +80,7 @@ public class NewsAnnotation_Type extends Annotation_Type {
    */ 
   public String getTitle(int addr) {
         if (featOkTst && casFeat_title == null)
-      jcas.throwFeatMissing("title", "de.unihamburg.informatik.nlp4web.tutorial.tut5.type.NewsAnnotation");
+      jcas.throwFeatMissing("title", "de.unihamburg.informatik.nlp4web.final_project.type.ReviewAnnotation");
     return ll_cas.ll_getStringValue(addr, casFeatCode_title);
   }
   /** @generated
@@ -89,7 +89,7 @@ public class NewsAnnotation_Type extends Annotation_Type {
    */    
   public void setTitle(int addr, String v) {
         if (featOkTst && casFeat_title == null)
-      jcas.throwFeatMissing("title", "de.unihamburg.informatik.nlp4web.tutorial.tut5.type.NewsAnnotation");
+      jcas.throwFeatMissing("title", "de.unihamburg.informatik.nlp4web.final_project.type.ReviewAnnotation");
     ll_cas.ll_setStringValue(addr, casFeatCode_title, v);}
     
   
@@ -101,7 +101,7 @@ public class NewsAnnotation_Type extends Annotation_Type {
 	 * @param jcas JCas
 	 * @param casType Type 
 	 */
-  public NewsAnnotation_Type(JCas jcas, Type casType) {
+  public ReviewAnnotation_Type(JCas jcas, Type casType) {
     super(jcas, casType);
     casImpl.getFSClassRegistry().addGeneratorForType((TypeImpl)this.casType, getFSGenerator());
 

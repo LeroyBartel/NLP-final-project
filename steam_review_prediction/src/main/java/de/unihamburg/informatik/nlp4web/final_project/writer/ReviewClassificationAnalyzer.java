@@ -1,15 +1,12 @@
 package de.unihamburg.informatik.nlp4web.final_project.writer;
 
 import org.apache.commons.io.IOUtils;
-//import org.apache.uima.UIMAFramework;
 import org.apache.uima.analysis_engine.AnalysisEngineProcessException;
 import org.apache.uima.fit.component.JCasAnnotator_ImplBase;
 import org.apache.uima.fit.descriptor.ConfigurationParameter;
 import org.apache.uima.jcas.JCas;
-//import org.apache.uima.util.Level;
-//import org.apache.uima.util.Logger;
 
-import de.unihamburg.informatik.nlp4web.final_project.type.NewsAnnotation;
+import de.unihamburg.informatik.nlp4web.final_project.type.ReviewAnnotation;
 
 import java.io.*;
 import java.util.logging.FileHandler;
@@ -18,7 +15,7 @@ import java.util.logging.SimpleFormatter;
 
 import static org.apache.uima.fit.util.JCasUtil.select;
 
-public class NewsClassificationAnalyzer extends JCasAnnotator_ImplBase {
+public class ReviewClassificationAnalyzer extends JCasAnnotator_ImplBase {
     //UIMAFramework.getLogger(NewsClassificationAnalyzer.class);
 
 	public static final String LF = System.getProperty("line.separator");
@@ -40,20 +37,13 @@ public class NewsClassificationAnalyzer extends JCasAnnotator_ImplBase {
 			fhandler = new FileHandler(outputDirScores, true);
 			fhandler.setFormatter(new SimpleFormatter());
 	    	logger.addHandler(fhandler);
-	    	
-//	        int tot = 0;
-//	        int corr = 0;
 	        
 	        try {
 	            FileOutputStream result = new FileOutputStream(outputDir);
 	            IOUtils.write("TITLE\tGOLD\tPREDICTED\n", result,"UTF-8");
-	        	for (NewsAnnotation news : select(jCas, NewsAnnotation.class)) {
+	        	for (ReviewAnnotation news : select(jCas, ReviewAnnotation.class)) {
 	        		String predicted = news.getPredictValue();
 	        		String gold = news.getGoldValue();
-//	                if (predicted.equals(gold)) {
-//	                    corr++;
-//	                }
-//	        		tot++;
 	        		IOUtils.write(news.getTitle() +"\t"+ gold +"\t"+predicted+"\n", result, "UTF-8");
 	        	}
 	        } catch (IOException e) {
@@ -72,22 +62,16 @@ public class NewsClassificationAnalyzer extends JCasAnnotator_ImplBase {
 	        logger.info("Accuracy " + String.format("%1$,.2f", acc) + "%");
 	        logger.info("------------------------------------------------------------------------------------------------------------");
 	        
-	        logger.info("Precision b " + computePrecision(confusion_mat, 0));
-	        logger.info("Precision t " + computePrecision(confusion_mat, 1));
-	        logger.info("Precision e " + computePrecision(confusion_mat, 2));
-	        logger.info("Precision m " + computePrecision(confusion_mat, 3));
+	        logger.info("Precision 0 " + computePrecision(confusion_mat, 0));
+	        logger.info("Precision 1 " + computePrecision(confusion_mat, 1));
 	        logger.info("------------------------------------------------------------------------------------------------------------");
 	        
-	        logger.info("Recall b " + computeRecall(confusion_mat, 0));
-	        logger.info("Recall t " + computeRecall(confusion_mat, 1));
-	        logger.info("Recall e " + computeRecall(confusion_mat, 2));
-	        logger.info("Recall m " + computeRecall(confusion_mat, 3));
+	        logger.info("Recall 0 " + computeRecall(confusion_mat, 0));
+	        logger.info("Recall 1 " + computeRecall(confusion_mat, 1));
 	        logger.info("------------------------------------------------------------------------------------------------------------");
 	        
-	        logger.info("F1 b " + computeF1(confusion_mat, 0));
-	        logger.info("F1 t " + computeF1(confusion_mat, 1));
-	        logger.info("F1 e " + computeF1(confusion_mat, 2));
-	        logger.info("F1 m " + computeF1(confusion_mat, 3));
+	        logger.info("F1 0 " + computeF1(confusion_mat, 0));
+	        logger.info("F1 1 " + computeF1(confusion_mat, 1));
 	        logger.info("------------------------------------------------------------------------------------------------------------" + LF + LF);
 	        
 		fhandler.close();
@@ -104,17 +88,11 @@ public class NewsClassificationAnalyzer extends JCasAnnotator_ImplBase {
     private int compConfMatHelper(String prediction) {
     	int index = -1;
     	switch (prediction) {
-		case "b":
+		case "0":
 			index = 0;
 			break;
-		case "t":
+		case "1":
 			index = 1;
-			break;
-		case "e":
-			index = 2;
-			break;
-		case "m":
-			index = 3;
 			break;
 		default:
 			break;
@@ -126,23 +104,17 @@ public class NewsClassificationAnalyzer extends JCasAnnotator_ImplBase {
     	// Computes confusion matrix C[i,j] with fixed size 4x4 for all categories (b, t, e, m).
     	// Row indexes correspond to the actual true values, whereas columns correspond to the predictions.
     	// b <-> idx 0; t <-> idx 1; e <-> idx 2; m <-> idx 3; 
-    	int[][] conf_mat = new int[4][4];
-    	for (NewsAnnotation news : select(jCas, NewsAnnotation.class)) {
+    	int[][] conf_mat = new int[2][2];
+    	for (ReviewAnnotation news : select(jCas, ReviewAnnotation.class)) {
     		String predicted = news.getPredictValue();
     		String gold = news.getGoldValue();
     		
     		switch (gold) {
-    		case "b":
+    		case "0":
     			conf_mat[0][compConfMatHelper(predicted)] += 1;
     			break;
-    		case "t":
+    		case "1":
     			conf_mat[1][compConfMatHelper(predicted)] += 1;
-    			break;
-    		case "e":
-    			conf_mat[2][compConfMatHelper(predicted)] += 1;
-    			break;
-    		case "m":
-    			conf_mat[3][compConfMatHelper(predicted)] += 1;
     			break;
     		default:
     			break;
