@@ -39,6 +39,8 @@ public class JsonReviewReader extends JCasCollectionReader_ImplBase {
 	private List<File> documents;
 	private int i = 0;
 	
+	int REVIEW_COUNT = 100;
+	
 	@Override
 	public void initialize(UimaContext context) throws ResourceInitializationException {
 		super.initialize(context);
@@ -63,17 +65,56 @@ public class JsonReviewReader extends JCasCollectionReader_ImplBase {
 		
 		JsonElement root = new JsonParser().parse(new FileReader(f));
 		JsonArray reviews = root.getAsJsonObject().get("reviews").getAsJsonArray();
+				
+		int total_positive = root.getAsJsonObject().get("total_positive").getAsInt();
+		int total_negative =  root.getAsJsonObject().get("total_negative").getAsInt();
+		
+		int min_reviews = Math.min(total_positive, total_negative);
+		
+		
+		if (REVIEW_COUNT < min_reviews * 2) {
+			min_reviews = REVIEW_COUNT / 2;
+			REVIEW_COUNT = 0;
+		} else {
+			REVIEW_COUNT -= min_reviews * 2;
+		}
+		
+		
+		total_positive = min_reviews;
+		total_negative = min_reviews;
+		
 		for (JsonElement entry : reviews) {
+			if (total_positive <= 0 && total_negative <= 0) {
+				break;
+			}
+			
 			String review = entry.getAsJsonObject().get("review").getAsString();
-			String voted_up = Integer.toString(entry.getAsJsonObject().get("voted_up").getAsBoolean() ? 1 : 0);
-			
-			review = review.trim();
-			review = review.replaceAll("[\\n\\t]+", " ");
-			
-			sb.append(review);
-			sb.append("\t");
-			sb.append(voted_up);
-			sb.append(LF);
+			boolean vote = entry.getAsJsonObject().get("voted_up").getAsBoolean();
+			String voted_up = Integer.toString(vote ? 1 : 0);
+
+			if (vote) {
+				total_positive--;
+				if(total_positive>=0) {
+					review = review.trim();
+					review = review.replaceAll("[\\n\\t]+", " ");
+				
+					sb.append(review);
+					sb.append("\t");
+					sb.append(voted_up);
+					sb.append(LF);
+				}
+			} else {
+				total_negative--;
+				if(total_negative>=0) {
+					review = review.trim();
+					review = review.replaceAll("[\\n\\t]+", " ");
+				
+					sb.append(review);
+					sb.append("\t");
+					sb.append(voted_up);
+					sb.append(LF);
+				}
+			}
 		}
 		
 		jCas.setDocumentLanguage(language);
