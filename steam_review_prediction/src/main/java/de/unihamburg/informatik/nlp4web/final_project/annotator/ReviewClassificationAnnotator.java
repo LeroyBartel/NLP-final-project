@@ -19,6 +19,7 @@ import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Sentence;
 import de.tudarmstadt.ukp.dkpro.core.api.segmentation.type.Token;
 import de.unihamburg.informatik.nlp4web.final_project.feature.CharacterCountExtractor;
 import de.unihamburg.informatik.nlp4web.final_project.feature.CountAnnotationExtractor;
+import de.unihamburg.informatik.nlp4web.final_project.feature.PunctuationCountExtractor;
 import de.unihamburg.informatik.nlp4web.final_project.type.ReviewAnnotation;
 
 import java.io.File;
@@ -39,11 +40,6 @@ public class ReviewClassificationAnnotator extends CleartkAnnotator<String> {
     public static final String TFIDF_EXTRACTOR_KEY = "Token";
     public static final String CENTROID_TFIDF_SIM_EXTRACTOR_KEY = "CentroidTfIdfSimilarity";
     public static final String MINMAX_EXTRACTOR_KEY = "MINMAXFeatures";
-//    @ConfigurationParameter(
-//    		name = PARAM_NEW_FEATURE_ACTIVE,
-//    		mandatory = true,
-//    		description = "indicates if the new lexically frequency feature shall be included")
-//    private boolean newFeatureIncluded;
     @ConfigurationParameter(
             name = PARAM_TF_IDF_URI,
             mandatory = false,
@@ -99,13 +95,15 @@ public class ReviewClassificationAnnotator extends CleartkAnnotator<String> {
             CentroidTfidfSimilarityExtractor<String, ReviewAnnotation> simExtractor = initCentroidTfIdfSimilarityExtractor();
             MinMaxNormalizationExtractor<String, ReviewAnnotation> minmaxExtractor = initMinMaxExtractor();
             CharacterCountExtractor<ReviewAnnotation> ccExtractor = initCharCountExtractor();
+            PunctuationCountExtractor<ReviewAnnotation> pcExtractor = initPunctuationCountExtractor();
 
             /** Collecting all features in a CombinedExtractor1<T> **/
             this.extractor = new CombinedExtractor1<ReviewAnnotation>(
             		tfIdfExtractor,
             		simExtractor,
             		minmaxExtractor,
-            		ccExtractor);
+            		ccExtractor,
+            		pcExtractor);
 
         } catch (IOException e) {
             throw new ResourceInitializationException(e);
@@ -170,6 +168,13 @@ public class ReviewClassificationAnnotator extends CleartkAnnotator<String> {
 
         CharacterCountExtractor<ReviewAnnotation> ccExtractor = new CharacterCountExtractor<ReviewAnnotation>(ReviewAnnotation.class);
         return ccExtractor;
+    }
+    
+    private PunctuationCountExtractor<ReviewAnnotation> initPunctuationCountExtractor() 
+    		throws IOException {
+
+        PunctuationCountExtractor<ReviewAnnotation> pcExtractor = new PunctuationCountExtractor<ReviewAnnotation>(ReviewAnnotation.class);
+        return pcExtractor;
     }
 
     /**

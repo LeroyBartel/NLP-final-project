@@ -66,25 +66,25 @@ public class ReviewAnnotator extends JCasAnnotator_ImplBase {
                 docText.append(" ");
                 
                 review = new ReviewAnnotation(docView, idx, idx + tweet.length());
-                sentence = new Sentence(docView, idx, idx + tweet.length());
+//                sentence = new Sentence(docView, idx, idx + tweet.length());
                 
-                String[] words = tweet.split("\\s+");
-                int current = 0;
-                int position = 0;
-                int tokenStart = 0;
-                int tokenEnd = 0;
-                
-                for (String word : words){
-                	do{
-                		position = tweet.indexOf(word, current);
-                	} while (position < current);
-                	current = position + 1;
-                	tokenStart = idx + position;
-                	tokenEnd = tokenStart + word.length();
-                	token = new Token(docView, tokenStart, tokenEnd);
-                	token.addToIndexes();
-
-                }
+//                String[] words = tweet.split("\\s+");
+//                int current = 0;
+//                int position = 0;
+//                int tokenStart = 0;
+//                int tokenEnd = 0;
+//                
+//                for (String word : words){
+//                	do{
+//                		position = tweet.indexOf(word, current);
+//                	} while (position < current);
+//                	current = position + 1;
+//                	tokenStart = idx + position;
+//                	tokenEnd = tokenStart + word.length();
+//                	token = new Token(docView, tokenStart, tokenEnd);
+//                	token.addToIndexes();
+//
+//                }
 
                 // skip over the three characters "\t0\n" for each review entry
                 // the zero denotes a negative sentiment
@@ -98,7 +98,7 @@ public class ReviewAnnotator extends JCasAnnotator_ImplBase {
                 
 
                 review.addToIndexes();
-                sentence.addToIndexes();
+//                sentence.addToIndexes();
         }
         //docView.setSofaDataString(docText.toString(), "text/plain");
 	}
