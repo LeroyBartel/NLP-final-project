@@ -30,7 +30,7 @@ public class ReviewAnnotator extends JCasAnnotator_ImplBase {
         StringBuffer docText = new StringBuffer();
         try {
             docView = aJCas.getView(CAS.NAME_DEFAULT_SOFA);
-            tbText = aJCas.getDocumentText(); // aJCas.getView(NEWS_CSV_VIEW).getDocumentText();
+            tbText = aJCas.getDocumentText();
             aJCas.setDocumentLanguage("en");
         } catch (CASException e) {
             throw new AnalysisEngineProcessException(e);

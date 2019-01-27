@@ -39,11 +39,11 @@ public class ReviewClassificationAnnotator extends CleartkAnnotator<String> {
     public static final String TFIDF_EXTRACTOR_KEY = "Token";
     public static final String CENTROID_TFIDF_SIM_EXTRACTOR_KEY = "CentroidTfIdfSimilarity";
     public static final String MINMAX_EXTRACTOR_KEY = "MINMAXFeatures";
-    @ConfigurationParameter(
-    		name = PARAM_NEW_FEATURE_ACTIVE,
-    		mandatory = true,
-    		description = "indicates if the new lexically frequency feature shall be included")
-    private boolean newFeatureIncluded;
+//    @ConfigurationParameter(
+//    		name = PARAM_NEW_FEATURE_ACTIVE,
+//    		mandatory = true,
+//    		description = "indicates if the new lexically frequency feature shall be included")
+//    private boolean newFeatureIncluded;
     @ConfigurationParameter(
             name = PARAM_TF_IDF_URI,
             mandatory = false,
@@ -101,18 +101,11 @@ public class ReviewClassificationAnnotator extends CleartkAnnotator<String> {
             CharacterCountExtractor<ReviewAnnotation> ccExtractor = initCharCountExtractor();
 
             /** Collecting all features in a CombinedExtractor1<T> **/
-            if (newFeatureIncluded) {
-            	this.extractor = new CombinedExtractor1<ReviewAnnotation>(
-            			tfIdfExtractor,
-            			simExtractor,
-            			minmaxExtractor,
-            			ccExtractor);
-            } else {
-            	this.extractor = new CombinedExtractor1<ReviewAnnotation>(
-                        tfIdfExtractor,
-                        simExtractor,
-                        minmaxExtractor);
-            }
+            this.extractor = new CombinedExtractor1<ReviewAnnotation>(
+            		tfIdfExtractor,
+            		simExtractor,
+            		minmaxExtractor,
+            		ccExtractor);
 
         } catch (IOException e) {
             throw new ResourceInitializationException(e);
@@ -180,8 +173,8 @@ public class ReviewClassificationAnnotator extends CleartkAnnotator<String> {
     }
 
     /**
-     * Recursively going through all annotated news.
-     * During training we write each news instance in the modelOutputDir
+     * Recursively going through all annotated reviews.
+     * During training we write each reviews instance in the modelOutputDir
      * alone with its gold value. The written instances are then
      * read by the collectFeatures method to transform and train the data.
      **/
@@ -190,19 +183,19 @@ public class ReviewClassificationAnnotator extends CleartkAnnotator<String> {
     public void process(JCas jCas) throws AnalysisEngineProcessException {
 
         System.err.println("extracting");
-        for (ReviewAnnotation news : select(jCas, ReviewAnnotation.class)) {
+        for (ReviewAnnotation reviews : select(jCas, ReviewAnnotation.class)) {
             Instance<String> instance = new Instance<String>();
 
-            instance.addAll(this.extractor.extract(jCas, news));
+            instance.addAll(this.extractor.extract(jCas, reviews));
             
             if (this.isTraining()) {
-                instance.setOutcome(news.getGoldValue());
+                instance.setOutcome(reviews.getGoldValue());
                 this.dataWriter.write(instance);
 
             } else {
                 String result = this.classifier.classify(instance.getFeatures());
-                news.setPredictValue(result);
-                news.addToIndexes();
+                reviews.setPredictValue(result);
+                reviews.addToIndexes();
 
             }
         }

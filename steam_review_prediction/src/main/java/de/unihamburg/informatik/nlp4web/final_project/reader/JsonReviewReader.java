@@ -68,7 +68,6 @@ public class JsonReviewReader extends JCasCollectionReader_ImplBase {
 			String voted_up = Integer.toString(entry.getAsJsonObject().get("voted_up").getAsBoolean() ? 1 : 0);
 			
 			review = review.trim();
-//			review = review.toLowerCase();
 			review = review.replaceAll("[\\n\\t]+", " ");
 			
 			sb.append(review);

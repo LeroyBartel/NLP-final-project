@@ -23,7 +23,6 @@ NamedFeatureExtractor1<T> {
 	
 	@Override
 	public List<Feature> extract(JCas view, T focusAnnotation) throws CleartkExtractorException {
-//		System.out.println(focusAnnotation.getCoveredText());
 		int review_length = focusAnnotation.getCoveredText().length();
         return Arrays.asList(new Feature(this.name, review_length));
 	}
