@@ -1,6 +1,7 @@
 import json
 import os
 import http.client
+import sys
 
 
 def is_valid_app_id(connection, ID):
@@ -70,8 +71,8 @@ def get_specific_reviews_for_app(connection, ID, review_type, review_limit):
 
 
 # exclusively english reviews that have at least 1 up-vote are fetched
-def get_reviews_for_app(connection, ID):
-    reviews = get_specific_reviews_for_app(connection, ID, review_type="all", review_limit=10000000)
+def get_reviews_for_app(connection, ID, limit):
+    reviews = get_specific_reviews_for_app(connection, ID, review_type="all", review_limit=limit)
     return reviews
 
 
@@ -83,9 +84,9 @@ def get_number_of_positive_reviews(reviews):
     return count
 
 
-def create_json_entry(connection, app_ID, app_list):
+def create_json_entry(connection, app_ID, app_list, limit):
     app_title = get_game_title(app_ID, app_list)["name"]
-    reviews = get_reviews_for_app(connection, app_ID)
+    reviews = get_reviews_for_app(connection, app_ID, limit)
 
     total_reviews = len(reviews)
     total_pos_reviews = get_number_of_positive_reviews(reviews)
@@ -107,7 +108,7 @@ def write_data_as_json(data, file_path, indent=None):
         json.dump(data, out_file, indent=indent)
 
 
-def get_steam_data(start_ID, indent=None):
+def get_steam_data(start_ID, review_limit=None, indent=None):
 
     app_list = get_app_list()
     connection = http.client.HTTPSConnection("store.steampowered.com")
@@ -125,7 +126,7 @@ def get_steam_data(start_ID, indent=None):
 
             print(get_game_title(app_id, app_list))
             file_path = os.path.join(path, "App_" + str(app_id) + ".json")
-            json_entry = create_json_entry(connection, app_id, app_list)
+            json_entry = create_json_entry(connection, app_id, app_list, review_limit)
             print("-------------------------------------\n")
 
             if len(json_entry["reviews"]) > 0:
@@ -137,8 +138,24 @@ def get_steam_data(start_ID, indent=None):
 
 
 def main():
-    get_steam_data(start_ID=99910, indent=0)
+    lim = None
+    start = 0
+    try:
+        if len(sys.argv) == 2:
+            start = int(sys.argv[1])
+        elif len(sys.argv) == 3:
+            start = int(sys.argv[1])
+            lim = int(sys.argv[2])
+        elif len(sys.argv) > 3:
+            print("At most 2 optional arguments are valid: start_game_ID, review_limit_per_game; e.g. 0 1000")
+        else:
+            lim = None
+            start = 0
+    except:
+        print("Invalid arguments - 2 optional numbers are allowed ()")
+    print("start_ID: {}, review_limit: {}".format(start, lim))
+    get_steam_data(start_ID=start, review_limit=lim, indent=0)
 
-        
+
 if __name__ == "__main__":
     main()
