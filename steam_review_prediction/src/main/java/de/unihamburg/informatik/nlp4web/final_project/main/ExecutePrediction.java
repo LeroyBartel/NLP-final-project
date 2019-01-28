@@ -2,8 +2,6 @@ package de.unihamburg.informatik.nlp4web.final_project.main;
 
 import org.apache.uima.UIMAException;
 import org.apache.uima.UIMAFramework;
-import org.apache.uima.analysis_engine.AnalysisEngine;
-import org.apache.uima.collection.CollectionReader;
 import org.apache.uima.fit.factory.AnalysisEngineFactory;
 import org.apache.uima.fit.factory.CollectionReaderFactory;
 import org.apache.uima.fit.pipeline.SimplePipeline;
@@ -16,32 +14,40 @@ import org.cleartk.ml.jar.DirectoryDataWriterFactory;
 import org.cleartk.ml.jar.GenericJarClassifierFactory;
 import org.cleartk.ml.jar.JarClassifierBuilder;
 
-import de.tudarmstadt.ukp.dkpro.core.stanfordnlp.StanfordLemmatizer;
-import de.tudarmstadt.ukp.dkpro.core.stanfordnlp.StanfordPosTagger;
-import de.tudarmstadt.ukp.dkpro.core.stanfordnlp.StanfordSegmenter;
 import de.unihamburg.informatik.nlp4web.final_project.annotator.ReviewClassificationAnnotator;
 import de.unihamburg.informatik.nlp4web.final_project.annotator.ReviewAnnotator;
 import de.unihamburg.informatik.nlp4web.final_project.reader.JsonReviewReader;
+import de.unihamburg.informatik.nlp4web.final_project.reader.PreparedDataReader;
+import de.unihamburg.informatik.nlp4web.final_project.reader.ReviewCollector;
 import de.unihamburg.informatik.nlp4web.final_project.writer.ReviewClassificationAnalyzer;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 
 import static org.apache.uima.fit.factory.AnalysisEngineFactory.createEngine;
 import static org.apache.uima.fit.pipeline.SimplePipeline.runPipeline;
 
 public class ExecutePrediction {
 	
+	public static void prepareReviewData(File dataSourceDir, File dataTargetFile, int nReviews) 
+			throws ResourceInitializationException, UIMAException, IOException {
+		SimplePipeline.runPipeline(
+    			CollectionReaderFactory.createReader(JsonReviewReader.class,
+		    			JsonReviewReader.PARAM_DIRECTORY, dataSourceDir.getAbsolutePath(),
+		    			JsonReviewReader.PARAM_LANGUAGE, "en",
+		    			JsonReviewReader.PARAM_REVIEW_COUNT, nReviews),
+    			createEngine(ReviewCollector.class,
+    					ReviewCollector.PARAM_OUTPUT_DIR, dataTargetFile.getAbsolutePath()));
+	}
+	
 	public static void writeModel(File saTrain, File modelDirectory)
 			throws ResourceInitializationException, UIMAException, IOException {
 		System.err.println("Step 1: Extracting features and writing raw instances data");
 		runPipeline(
-				CollectionReaderFactory.createReader(JsonReviewReader.class,
-		    			JsonReviewReader.PARAM_DIRECTORY, saTrain.getAbsolutePath(),
-		    			JsonReviewReader.PARAM_LANGUAGE, "en"),
+				CollectionReaderFactory.createReader(PreparedDataReader.class,
+		    			PreparedDataReader.PARAM_DIRECTORY, saTrain.getAbsolutePath(),
+		    			PreparedDataReader.PARAM_LANGUAGE, "en"),
 				createEngine(ReviewAnnotator.class),
-//				createEngine(StanfordPosTagger.class, StanfordPosTagger.PARAM_LANGUAGE, "en"),
 				createEngine(AnalysisEngineFactory.createEngineDescription(
 						ReviewClassificationAnnotator.class,
 						ReviewClassificationAnnotator.PARAM_IS_TRAINING, true,
@@ -59,16 +65,16 @@ public class ExecutePrediction {
 		HideOutput hider = new HideOutput();
 		JarClassifierBuilder.trainAndPackage(modelDirectory, arguments);
 		hider.restoreOutput();
+		System.err.println("training finished.");
 	}
 
 	public static void classifyTestFile(File modelDirectory, File saTest, File result, File resultScores)
 			throws ResourceInitializationException, UIMAException, IOException {
 		runPipeline(
-				CollectionReaderFactory.createReader(JsonReviewReader.class,
-		    			JsonReviewReader.PARAM_DIRECTORY, saTest.getAbsolutePath(),
-		    			JsonReviewReader.PARAM_LANGUAGE, "en"),
+				CollectionReaderFactory.createReader(PreparedDataReader.class,
+		    			PreparedDataReader.PARAM_DIRECTORY, saTest.getAbsolutePath(),
+		    			PreparedDataReader.PARAM_LANGUAGE, "en"),
 				createEngine(ReviewAnnotator.class),
-//				createEngine(StanfordPosTagger.class, StanfordPosTagger.PARAM_LANGUAGE, "en"),
 				createEngine(AnalysisEngineFactory.createEngineDescription(
 						ReviewClassificationAnnotator.class,
 						ReviewClassificationAnnotator.PARAM_IS_TRAINING, false,
@@ -88,7 +94,7 @@ public class ExecutePrediction {
 
 	public static void execute(String train, String test, String name) throws Exception {
 		String generalPath = "src/main/resources/";
-		String[] trainingArguments = new String[]{"-t", "0", "-b", "1"};
+		String[] trainingArguments = new String[]{"-t", "0"};
 		long start = System.currentTimeMillis();
 
 		String modelPath = generalPath + "model" + name + "/";
@@ -97,43 +103,40 @@ public class ExecutePrediction {
 
 		String resltPath = generalPath + "results" + name + "/";
 		new File(resltPath).mkdirs();
-		File resultDir = new File(resltPath+"review_sentiment_prediction.csv");
+		File resultDir = new File(resltPath+"review_sentiment_prediction.txt");
 		File resultScores = new File(resltPath+"test-scores.txt");
 
-		File reviewsTrain = new File(generalPath + train);
-		File reviewsTest = new File(generalPath + test);
-
-		writeModel(reviewsTrain, modelDir);
+		String preparedDataPath = generalPath + "machine-learning-data/";
+		new File(preparedDataPath).mkdirs();
+		File reviewsTrainDir = new File(preparedDataPath + "training/");
+		File reviewsTestDir = new File(preparedDataPath + "testing/");
+		reviewsTrainDir.mkdirs();
+		reviewsTestDir.mkdirs();
+		
+		File reviewsTrainFile = new File(preparedDataPath + "training/" + "training-reviews.txt");
+		File reviewsTestFile = new File(preparedDataPath + "testing/" + "testing-reviews.txt");
+		
+		File reviewsTrainSourceDir = new File(generalPath + train);
+		File reviewsTestSourceDir = new File(generalPath + test);
+		
+		prepareReviewData(reviewsTrainSourceDir, reviewsTrainFile, 1000);
+		prepareReviewData(reviewsTestSourceDir, reviewsTestFile, 2000);
+		writeModel(reviewsTrainDir, modelDir);
 		trainModel(modelDir, trainingArguments);
-		classifyTestFile(modelDir, reviewsTest, resultDir, resultScores);
+		classifyTestFile(modelDir, reviewsTestDir, resultDir, resultScores);
+		
 		long now = System.currentTimeMillis();
 		UIMAFramework.getLogger().log(Level.INFO, "Time: " + (now - start) + "ms");
 	}
 	
-    public static void main(String[] args) throws UIMAException, IOException {
-    	
+    public static void main(String[] args) {
+    	String testFiles_dir = "evaluation-reviews/";
+    	String trainingFiles_dir = "steam-reviews/";
     	try {
-			execute("steam-reviews/", "evaluation-reviews/", "_review_sentiment_prediction");
+			execute(trainingFiles_dir, testFiles_dir, "_review_sentiment_prediction");
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-    	
-//    	execute("reviews/uci-reviews-aggregator.csv.train.small", "reviews/uci-reviews-aggregator.csv.test.small", "small", false);
-//    	execute("reviews/uci-reviews-aggregator-b-e.csv.train", "reviews/uci-reviews-aggregator-b-e.csv.test", "-b-e", false);
-//    	execute("reviews/uci-reviews-aggregator-b-m.csv.train", "reviews/uci-reviews-aggregator-b-m.csv.test", "-b-m", false);
-//    	execute("reviews/uci-reviews-aggregator-b-t.csv.train", "reviews/uci-reviews-aggregator-b-t.csv.test", "-b-t", false);
-//    	execute("reviews/uci-reviews-aggregator-e-m.csv.train", "reviews/uci-reviews-aggregator-e-m.csv.test", "-e-m", false);
-//    	execute("reviews/uci-reviews-aggregator-t-e.csv.train", "reviews/uci-reviews-aggregator-t-e.csv.test", "-t-e", false);
-//    	execute("reviews/uci-reviews-aggregator-t-m.csv.train", "reviews/uci-reviews-aggregator-t-m.csv.test", "-t-m", false);
-//    	
-//    	execute("reviews/uci-reviews-aggregator.csv.train.small", "reviews/uci-reviews-aggregator.csv.test.small", "small", true);
-//    	execute("reviews/uci-reviews-aggregator-b-e.csv.train", "reviews/uci-reviews-aggregator-b-e.csv.test", "-b-e", true);
-//    	execute("reviews/uci-reviews-aggregator-b-m.csv.train", "reviews/uci-reviews-aggregator-b-m.csv.test", "-b-m", true);
-//    	execute("reviews/uci-reviews-aggregator-b-t.csv.train", "reviews/uci-reviews-aggregator-b-t.csv.test", "-b-t", true);
-//    	execute("reviews/uci-reviews-aggregator-e-m.csv.train", "reviews/uci-reviews-aggregator-e-m.csv.test", "-e-m", true);
-//    	execute("reviews/uci-reviews-aggregator-t-e.csv.train", "reviews/uci-reviews-aggregator-t-e.csv.test", "-t-e", true);
-//    	execute("reviews/uci-reviews-aggregator-t-m.csv.train", "reviews/uci-reviews-aggregator-t-m.csv.test", "-t-m", true);
     }
 }
 

@@ -188,5 +188,4 @@ public class ReviewClassificationAnalyzer extends JCasAnnotator_ImplBase {
     	double f1 = 2.0 * (precision * recall / (precision + recall));
     	return f1;
     }
-
 }

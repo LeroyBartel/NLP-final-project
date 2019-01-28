@@ -3,7 +3,6 @@ package de.unihamburg.informatik.nlp4web.final_project.feature;
 import java.util.Arrays;
 import java.util.List;
 
-import org.apache.uima.fit.util.JCasUtil;
 import org.apache.uima.jcas.JCas;
 import org.apache.uima.jcas.tcas.Annotation;
 import org.cleartk.ml.Feature;
@@ -13,11 +12,9 @@ import org.cleartk.ml.feature.extractor.NamedFeatureExtractor1;
 public class CharacterCountExtractor<T extends Annotation> implements
 NamedFeatureExtractor1<T> {
 
-	private Class<? extends Annotation> annotationType;
     private String name;
     
     public CharacterCountExtractor(Class<? extends Annotation> annotationType) {
-        this.annotationType = annotationType;
         this.name = "Count_Characters";
     }
 	
