@@ -119,7 +119,7 @@ public class ExecutePrediction {
 		File reviewsTrainSourceDir = new File(generalPath + train);
 		File reviewsTestSourceDir = new File(generalPath + test);
 		
-		prepareReviewData(reviewsTrainSourceDir, reviewsTrainFile, 1000);
+		prepareReviewData(reviewsTrainSourceDir, reviewsTrainFile, 2000);
 		prepareReviewData(reviewsTestSourceDir, reviewsTestFile, 2000);
 		writeModel(reviewsTrainDir, modelDir);
 		trainModel(modelDir, trainingArguments);
