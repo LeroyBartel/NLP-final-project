@@ -152,7 +152,7 @@ def main():
             lim = None
             start = 0
     except:
-        print("Invalid arguments - 2 optional numbers are allowed ()")
+        print("Invalid arguments - 2 optional numbers are allowed (start_game_ID, review_limit_per_game)")
     print("start_ID: {}, review_limit: {}".format(start, lim))
     get_steam_data(start_ID=start, review_limit=lim, indent=0)
 
