@@ -138,7 +138,7 @@ def get_steam_data(start_ID, review_limit=None, indent=None):
 
 
 def main():
-    lim = None
+    lim = 1000000
     start = 0
     try:
         if len(sys.argv) == 2:
@@ -149,7 +149,7 @@ def main():
         elif len(sys.argv) > 3:
             print("At most 2 optional arguments are valid: start_game_ID, review_limit_per_game; e.g. 0 1000")
         else:
-            lim = None
+            lim = 1000000
             start = 0
     except:
         print("Invalid arguments - 2 optional numbers are allowed (start_game_ID, review_limit_per_game)")
